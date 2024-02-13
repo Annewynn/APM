@@ -1,0 +1,51 @@
+TAG Electro :
+ALL TITLE IN ("Carpenter", "Perturbator", "Dynatron", "Glitch mob")
+COLOR blue
+
+ALBUM Dance of Death FROM Iron Maiden :
+ALL PLAYLIST Iron Maiden
+WHHERE TITLES IN ("Montsegur", "Pachendale", "No more lies")
+
+PLAYLIST trucs au pif :
+30 RANDOM TITLES IN ALL
+SELECT UNTIL 1h
+
+FREEZE:
+PLAYLIST that's fun :
+ALL (TAG Electro UNION TAG Films)
+WHERE TIME < 5min
+ALTERNATE 1, 1
+:FREEZE
+-> pas de play random, la playlist est figée
+
+PLAYLIST Best : 
+10 FIRST TITLE IN "Zimmer" 
+-> play random par défaut
+
+FREEZE:
+PLAYLIST Best2 : 
+10 RANDOM TITLE IN "Rammstein" 
+:FREEZE
+
+PLAYLIST Electro select :
+ALL ((TAG Electro INTER (TAG 90 UNION TAG 2000)) DIFF PLAYLIST "Electro like" )
+WHERE TITLE NOT IN ("Perturbator", "Dynatron")
+SELECT UNTIL 1h
+
+PLAYLIST mixx ultime de la mort qui tue :
+ALL UNIQUE ((TAG Electro UNION TAG Rock UNION TAG "Musique celtique :D !!") UNION TITLE IN"Mamadou & Miriam - Un Dimanche à Bamako" )
+WHERE TITLE NOT IN ALBUM "Midnight truc je sais plus son nom" FROM Perturbator
+ALTERNATE 2, 2, 1, 0.5
+-> dimanche a bamako sera lu toutes les 10 musiques
+SET TIMER 30 min
+-> bip toutes les 30 min (sonorité à déterminer)
+
+PLAYLIST albums & ambiances :
+ALL WHERE TIME > 20min
+WITH FIRST TITLE = "La bataille de narnia" AND LAST TITLE IN TAG Electro
+
+
+
+
+PLAYLIST mixx ultime de la mort qui tue :
+((TAG Electro UNION TAG Rock INTER TAG "Musique celtique :D !!") DIFF (TITLE IN "Mamadou & Miriam - Un Dimanche à Bamako" UNION TITLE IN "))

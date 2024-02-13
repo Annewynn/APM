@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="apm.css">
+        <script type="text/javascript" src="apm.js"></script>
+        <script type="text/javascript" src="musique.js"></script>
+        <script type="text/javascript" src="code.js"></script>
+        <script type="text/javascript" src="playlist.js"></script>
+    </head>
+    <body onload="init()">
+        <label for="myfile">Sélectionner un dossier source :</label>
+        <input type="file" id="musics_input" name="myfile" accept="audio/*, video/*" multiple onchange="initialisation(event)">
+        <div style="height:calc(100%);">
+            Chargement des temps des musiques : <div id="chargement_temps"></div>
+        <!--icones de up et download, collées en haut à droite-->  
+        <div id="conteneur_icones">
+            <!--label for pour que le click sur plus se répercute sur input type file-->
+            <label for="add_apm_files">
+                <img id="add_apm_files_image" src="images/plus.svg" alt="load apm files from disk" class="icon" title="Charger des playlists depuis l'appareil">
+            </label>
+            <input id="add_apm_files" type="file" accept="text/*" multiple onchange="add_from_disk()" class="invisible">
+            <img id="upload" src="images/upload_icon.svg" alt="upload all files" class="icon icon-rien-save" onclick="upload()" title="Tout sauvegarder sur le serveur">
+            <img id="download" src="images/download-arrow.svg" alt="download all files" class="icon" onclick="download_all()" title="Tout télécharger en local">
+            <img id="parameters" src="images/Gear_icon_svg.svg" alt="parameters" class="icon" onclick="affiche_parametres()" title="Paramètres">
+            <div id="conteneur_parametres"></div>
+        </div>  
+        <div id="conteneur_3_grands_divs">
+            <!--contenant la bibliothèque des noms de musiques-->
+            <div id="bibliotheque" class="div_central">
+                <h2>Bibliothèque</h2>
+                <input type="text" id="recherche_biblio" placeholder="rechercher un titre, un auteur" onkeyup="input_recherche_biblio(event)">
+                <input type="button" id="vide_recherche_biblio" value="x" onclick="recharge_recherche()">
+                <br>
+                <div id="biblio">
+                    <table id="biblio_table">
+
+                    </table>
+                </div>
+            </div>
+            <!--contenant le champ de texte-->
+            <div id="mid_contener" class="div_central">
+                <!--contenant la liste de playlists et de tags-->
+                <div id="playlist_tags_contener">
+                    <h2>Playlists & Tags</h2>
+                    <input type="button" value="+" onclick="affiche_code('', '')">
+                    <br>
+                    <!--a changer-->
+                    <div id="conteneur_playlists_tags_albums">
+                        <div id="conteneur_PLAYLIST"></div>
+                        <div id="conteneur_ALBUM"></div>
+                        <div id="conteneur_TAG"></div>
+                    </div>
+                   <!-- <select id="emplacement_playlists" size="4" onchange="affiche_playlist_ou_tag()">
+                    
+                    </select>-->
+                </div>
+                <!--contenant le code-->
+                <div id="code_contener">
+                    <!--contenant le nom du code-->
+                    <div id="code_name_contener">
+                        <input type="text" id="code_name" placeholder="Nom du code">
+                        <input type="button" id="btn_enregistrer" value="Enregistrer" onclick="enregistrer_code()">
+                    </div>
+                    <!--contenant le texte du code-->
+                    <div id="code_text_contener">
+                        <textarea id="code" placeholder="Entrer le code ici..." rows="4" cols="40">
+                        </textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!--contenant les pistes en lecture-->
+            <div id="right_contener" class="div_central">
+                <h2>Lecture</h2>
+                <div id="playlist_contener">
+                    
+                </div>
+            </div>
+        </div>
+         <!--contenant l'element audio-->
+        <div id="audio_contener">
+
+        </div>
+    </body>
+</html>
