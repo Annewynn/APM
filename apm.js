@@ -23,7 +23,8 @@ var internet_connection = window.navigator.onLine;
 //si la fenetre est en ligne mais que l'url ne contient pas localhost, on est pas en ligne (on utilise le fichier en local)
 if (internet_connection)
 {
-    if (!window.location.origin.includes("localhost")) internet_connection = false;
+    if (!window.location.origin.includes("http")) internet_connection = false;
+    else if (!window.location.origin.includes("localhost")) internet_connection = false;
 }
 
 //init() lancé au chargement de la page
@@ -82,7 +83,7 @@ function trie_data(data)
 function charge_params()
 {
     var dict = {'chargement_temps_musiques_au_lancement' : ["charger les temps des musiques au lancement (réduit les performances)", "checkbox", true], 
-                'color_theme' : ["thème", "colorbox", "aquablue"]};
+                'color_theme' : ["thème", "colorbox", "cadetblue"]};
     
     if (internet_connection)
     {
@@ -104,8 +105,8 @@ function charge_params()
 
 function construit_parametres(data)
 {
-    console.log(JSON.parse(data));
     parameters = JSON.parse(data);
+    console.log(parameters);
     var conteneur = document.querySelector("#conteneur_parametres");
     //créer un panneau affiché par dessus le reste
     var div = document.createElement('div');
@@ -113,29 +114,75 @@ function construit_parametres(data)
     div.classList.add("div_parametres");
     var titre = document.createElement('h2');
     titre.innerHTML = "Paramètres";
+    titre.id = "titre_parametres";
+    //bouton fermer
+    var div_fermer = document.createElement('div');
+    div_fermer.id = "div_bouton_fermer_parametres";
+
+    var bouton_fermer = document.createElement("button");
+    bouton_fermer.innerHTML = "X";
+    bouton_fermer.classList.add("bouton_fermer");
+    bouton_fermer.addEventListener("click", ferme_parametres);
+
     var options = [];
-    for (var i =0; i<parameters.length; i++)
+    for (var key in parameters)
     {
-        if (parameter[1] == "checkbox")
+        if (parameters[key][1] == "checkbox")
         {
             //<input type="checkbox" id="vehicle1" name="vehicle1" value="Bike">
             //<label for="vehicle1"> I have a bike</label><br></br>
-            var checkbox = document.createElement('checkbox');
-            checkbox.id = "parameters" + i;
+            var checkbox = document.createElement('input');
+            checkbox.type = "checkbox";
+            checkbox.id = "parameters_" + key;
+            if (parameters[key][2]) checkbox.setAttribute("checked", true);
             var label = document.createElement('label');
-            label.for = "parameters" + i;
-            label.innerHTML = parameter[0];
+            label.for = "parameters_" + key;
+            label.innerHTML = parameters[key][0] + "<br>";
 
-            options.add(checkbox);
-            options.add(label);
+            options.push(checkbox);
+            options.push(label);
+        }
+        else if (parameters[key][1] == "colorbox")
+        {
+            //<label for="favcolor">Select your favorite color:</label>
+            //<input type="color" id="favcolor" name="favcolor" value="#ff0000"><br><br>
+            var colorbox = document.createElement('input');
+            colorbox.type = "color";
+            colorbox.id = "parameters_" + key;
+            if (parameters[key][2]) colorbox.setAttribute("value", parameters[key][2]);
+            colorbox.addEventListener("input", background_color_change_realtime, false);
+            var label = document.createElement('label');
+            label.for = "parameters_" + key;
+            label.innerHTML = parameters[key][0] + "<br>";
+
+            options.push(colorbox);
+            options.push(label);
         }
     }
+    console.log(options);
+    //bouton appliquer : grisé tant que rien n'a changé
+    //permet de récupérer les infos des paramètres appliqués et les sauver dans le json
+    //dans un div pour son positionnement
+    var div_appliquer = document.createElement('div');
+    div_appliquer.id = "div_bouton_appliquer_parametres";
+
+    var bouton_appliquer = document.createElement("button");
+    bouton_appliquer.id = "bouton_appliquer_parametres";
+    bouton_appliquer.innerHTML = "Appliquer";
+    bouton_appliquer.addEventListener("click", applique_parametres);
+
+    div_fermer.appendChild(bouton_fermer);
+    div.appendChild(div_fermer);
     div.appendChild(titre);
     for (var i =0; i<options.length; i++)
     {
         div.appendChild(options[i]);
     }
+    div_appliquer.appendChild(bouton_appliquer);
+    div.appendChild(div_appliquer);
     conteneur.appendChild(div);
+
+    degrise_applique_parametres();
 }
 
 //récuppérer les noms des musiques de musics_input
@@ -1087,6 +1134,69 @@ function affiche_parametres()
     var conteneur = document.querySelector("#conteneur_parametres div");
     conteneur.classList.remove("invisible");
 }
+
+//bouton applique : si grisé, le rend non grisé
+//si non grisé, le rend grisé
+function degrise_applique_parametres()
+{
+    var bouton_appliquer = document.querySelector("#bouton_appliquer_parametres");
+    //enlever les event change tant que le bouton appliquer n'est pas à nouveau grisé
+    var inputs = document.querySelectorAll("#conteneur_parametres div input");
+
+    if (bouton_appliquer.disabled) 
+    {
+        bouton_appliquer.disabled = false;
+        remove_event_listeners(inputs, "change", degrise_applique_parametres);
+    }
+    else 
+    {
+        bouton_appliquer.disabled = true;
+        add_event_listeners(inputs, "change", degrise_applique_parametres);
+    }
+}
+
+function background_color_change_realtime(e)
+{
+    var body = document.querySelector("body");
+    body.style.backgroundColor = e.target.value;
+}
+
+//pour une liste d'éléments, enlève un event listener particulier
+function remove_event_listeners(id_table, action, fonction)
+{
+    for (var i =0; i<id_table.length; i++)
+    {
+        id_table[i].removeEventListener(action, fonction);
+    }
+}
+
+//pour une liste d'éléments, ajoute un event listener
+function add_event_listeners(id_table, action, fonction)
+{
+    for (var i =0; i<id_table.length; i++)
+    {
+        id_table[i].addEventListener(action, fonction);
+    }
+}
+
+//onclick sur applique paramètres
+//pour chaque input de paramètres, lire la valeur 
+//l'appliquer
+//et la sauver dans le json
+function applique_parametres()
+{
+    var inputs = document.querySelectorAll("#conteneur_parametres div input");
+    degrise_applique_parametres();
+    console.log(inputs);
+}
+
+function ferme_parametres()
+{
+    var conteneur = document.querySelector("#conteneur_parametres div");
+    conteneur.classList.add("invisible");
+}
+
+
 
 //https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
 //https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
