@@ -26,6 +26,10 @@ if (internet_connection)
     if (!window.location.origin.includes("http")) internet_connection = false;
     else if (!window.location.origin.includes("localhost")) internet_connection = false;
 }
+else 
+{
+    if (window.location.origin.includes("http") || window.location.origin.includes("localhost")) internet_connection = true;
+}
 
 //init() lancé au chargement de la page
 //si en ligne, charge les playlists/tags/albums depuis le serveur
@@ -53,7 +57,7 @@ function init()
     }
     else 
     {
-        document.querySelector("#download").classList.add("icon-rien-save");
+        document.querySelector("#download").parentElement.classList.add("icon-rien-save");
     }
 
     charge_params();
@@ -106,16 +110,13 @@ function charge_params()
 function construit_parametres(data)
 {
     parameters = JSON.parse(data);
-    console.log(parameters);
-    var conteneur = document.querySelector("#conteneur_parametres");
-    //créer un panneau affiché par dessus le reste
-    var div = document.createElement('div');
-    div.classList.add("invisible");
-    div.classList.add("div_parametres");
+    var conteneur = document.querySelector("#parameters_contener");
+    //afficher dedans les paramètres
     var titre = document.createElement('h2');
     titre.innerHTML = "Paramètres";
     titre.id = "titre_parametres";
-    //bouton fermer
+    /*
+    //bouton fermer : non affiché avec smallscreen
     var div_fermer = document.createElement('div');
     div_fermer.id = "div_bouton_fermer_parametres";
 
@@ -123,64 +124,55 @@ function construit_parametres(data)
     bouton_fermer.innerHTML = "X";
     bouton_fermer.classList.add("bouton_fermer");
     bouton_fermer.addEventListener("click", ferme_parametres);
-
-    var options = [];
+*/
+    //liste de div pour chaque paire box-label
+    var divs = [];
+        
     for (var key in parameters)
     {
+        //div pour la paire box-label
+        divs.push(document.createElement('div'));
+        divs[divs.length-1].classList.add("textalign_left");
+        //création paire box-label
+        var box = document.createElement('input');
+        box.id = key;
+        var label = document.createElement('label');
+        label.for = key;
+        label.innerHTML = parameters[key][0];
+        label.classList.add("inline");
+
+        //spécificités box
         if (parameters[key][1] == "checkbox")
         {
-            //<input type="checkbox" id="vehicle1" name="vehicle1" value="Bike">
-            //<label for="vehicle1"> I have a bike</label><br></br>
-            var checkbox = document.createElement('input');
-            checkbox.type = "checkbox";
-            checkbox.id = "parameters_" + key;
-            if (parameters[key][2]) checkbox.setAttribute("checked", true);
-            var label = document.createElement('label');
-            label.for = "parameters_" + key;
-            label.innerHTML = parameters[key][0] + "<br>";
-
-            options.push(checkbox);
-            options.push(label);
+            box.type = "checkbox";
+            if (parameters[key][2]) box.setAttribute("checked", true);
         }
-        else if (parameters[key][1] == "colorbox")
+        else if (parameters[key][1] == "color")
         {
-            //<label for="favcolor">Select your favorite color:</label>
-            //<input type="color" id="favcolor" name="favcolor" value="#ff0000"><br><br>
-            var colorbox = document.createElement('input');
-            colorbox.type = "color";
-            colorbox.id = "parameters_" + key;
-            if (parameters[key][2]) colorbox.setAttribute("value", parameters[key][2]);
-            colorbox.addEventListener("input", background_color_change_realtime, false);
-            var label = document.createElement('label');
-            label.for = "parameters_" + key;
-            label.innerHTML = parameters[key][0] + "<br>";
-
-            options.push(colorbox);
-            options.push(label);
+            box.type = "color";
+            if (parameters[key][2]) box.setAttribute("value", parameters[key][2]);
+            box.addEventListener("input", background_color_change_realtime, false);
+            document.querySelector("body").style.backgroundColor = parameters[key][2];
         }
+        //append paire box-label dans div
+        divs[divs.length-1].appendChild(box);
+        divs[divs.length-1].appendChild(label);
     }
-    console.log(options);
     //bouton appliquer : grisé tant que rien n'a changé
     //permet de récupérer les infos des paramètres appliqués et les sauver dans le json
-    //dans un div pour son positionnement
-    var div_appliquer = document.createElement('div');
-    div_appliquer.id = "div_bouton_appliquer_parametres";
-
     var bouton_appliquer = document.createElement("button");
     bouton_appliquer.id = "bouton_appliquer_parametres";
     bouton_appliquer.innerHTML = "Appliquer";
     bouton_appliquer.addEventListener("click", applique_parametres);
 
-    div_fermer.appendChild(bouton_fermer);
-    div.appendChild(div_fermer);
-    div.appendChild(titre);
-    for (var i =0; i<options.length; i++)
+    //div_fermer.appendChild(bouton_fermer);
+    //div.appendChild(div_fermer);
+    conteneur.appendChild(titre);
+    for (var i =0; i<divs.length; i++)
     {
-        div.appendChild(options[i]);
+        conteneur.appendChild(divs[i]);
     }
-    div_appliquer.appendChild(bouton_appliquer);
-    div.appendChild(div_appliquer);
-    conteneur.appendChild(div);
+    conteneur.appendChild(bouton_appliquer);
 
     degrise_applique_parametres();
 }
@@ -188,7 +180,7 @@ function construit_parametres(data)
 //récuppérer les noms des musiques de musics_input
 function initialisation(event)
 {
-    var fichiers = document.querySelector("#musics_input").files;
+    var fichiers = document.querySelector("#musics_file_input").files;
     //let value = URL.createObjectURL(event.target.files[0]);
     //créer une option par fichier et mettre le nom de la musique dedans
     var selection = document.querySelector("#biblio_table");
@@ -209,7 +201,6 @@ function initialisation(event)
     }
     actual_biblio = biblio;
 
-    //document.querySelector("#upload").classList.add("icon-rien-save");
     reinterprete_codes();
     recharge_recherche();
 
@@ -217,6 +208,14 @@ function initialisation(event)
     //si on est sur des machines assez puissantes on peut charger les temps des musiques
     //exclusion par défaut des smartphones, sous android et ios
     if (os != 'Android' || os != 'iOS') readmultifiles(fichiers, biblio_length);
+}
+
+//https://stackoverflow.com/a/60357706
+function cssvar_change(cssvar, value, items)
+{
+    items.forEach((item) => {
+        item.style.setProperty(cssvar, value);
+      });
 }
 
 //https://stackoverflow.com/a/38241481
@@ -340,6 +339,8 @@ function actualise_biblio_affichee(liste_biblio)
     for (var i = 0; i<liste_biblio.length;i++)
     {
         var tr = document.createElement('tr');
+        //on hover, rgb body alpha 0.7
+        tr.classList.add("tr_hover");
         tr.addEventListener("click", lance, false);
         var td_color = document.createElement('td');
         //change background color
@@ -356,6 +357,14 @@ function actualise_biblio_affichee(liste_biblio)
         tr.appendChild(td_music);
         selection.appendChild(tr);
     }
+        //change la couleur de tr_hover:hover à celle de body avec alpha 0.7
+        var items = selection.querySelectorAll('tr');
+        var bodycolor = document.querySelector("body").style.backgroundColor;
+        //insert ,alpha code at length -2
+        var tbodycolor = Array.from(bodycolor);
+        tbodycolor.splice(bodycolor.length-1, 0, ',0.8');
+        bodycolor = tbodycolor.join('');
+        cssvar_change("--cssvar-trhover", bodycolor, items);
 }
 
 function input_recherche_biblio(event)
@@ -1023,7 +1032,7 @@ function maj_liste(type)
         row.appendChild(td_download);
         tbody.appendChild(row);
     }
-    if (!internet_connection) document.querySelector("#upload").classList.remove("icon-rien-save");
+    if (!internet_connection) document.querySelector("#upload").parentElement.classList.remove("icon-rien-save");
 }
 
 function reduce_extend_list(e)
@@ -1131,8 +1140,25 @@ function affiche_playlist(event)
 
 function affiche_parametres()
 {
-    var conteneur = document.querySelector("#conteneur_parametres div");
+    var conteneur = document.querySelector("#parameters_contener div");
     conteneur.classList.remove("invisible");
+}
+
+//select grid container et redessine la grille pour afficher au milieu le div voulu
+//sur les autres, appliquer invisible
+function smallscreen_affiche_different_body_div(class_to_add, div_id)
+{
+    var conteneur = document.querySelector("#all_grids_container");
+
+    var divs = document.querySelectorAll("#all_grids_container > div");
+    for (var i =1; i<(divs.length-1); i++)
+    {
+        if (divs[i].id != div_id) divs[i].classList.add("invisible");
+        else divs[i].classList.remove("invisible");
+    }
+    //enlever les classes, ajouter affiche_biblio
+    conteneur.classList.remove("affiche_biblio", "affiche_playt", "affiche_playlist", "affiche_parametres");
+    conteneur.classList.add(class_to_add);
 }
 
 //bouton applique : si grisé, le rend non grisé
@@ -1141,7 +1167,7 @@ function degrise_applique_parametres()
 {
     var bouton_appliquer = document.querySelector("#bouton_appliquer_parametres");
     //enlever les event change tant que le bouton appliquer n'est pas à nouveau grisé
-    var inputs = document.querySelectorAll("#conteneur_parametres div input");
+    var inputs = document.querySelectorAll("#parameters_contener input");
 
     if (bouton_appliquer.disabled) 
     {
@@ -1185,14 +1211,32 @@ function add_event_listeners(id_table, action, fonction)
 //et la sauver dans le json
 function applique_parametres()
 {
-    var inputs = document.querySelectorAll("#conteneur_parametres div input");
+    var divs = document.querySelectorAll("#parameters_contener div");
     degrise_applique_parametres();
-    console.log(inputs);
+
+    //tableau de la forme : {id input : [label value, input type, input value]}
+    var jsarray = {};
+    for (var i =0; i<divs.length; i++)
+    {
+        let input = divs[i].querySelector("input");
+        let label = divs[i].querySelector("label");
+        let inputvalue = input.value;
+        if (input.type == "checkbox") inputvalue = input.checked;
+        jsarray[input.id] = [label.innerHTML, input.type, inputvalue];
+    }
+    //sauver valeurs dans json
+    console.log(JSON.stringify(jsarray));
+
+    var chainePost = 'data=' + JSON.stringify(jsarray);
+    var xhr_np = new XMLHttpRequest();
+    xhr_np.open("POST", "sauver_parametres.php");
+    xhr_np.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhr_np.send(chainePost);
 }
 
 function ferme_parametres()
 {
-    var conteneur = document.querySelector("#conteneur_parametres div");
+    var conteneur = document.querySelector("#parameters_contener div");
     conteneur.classList.add("invisible");
 }
 
@@ -1262,7 +1306,7 @@ function upload()
     xhr_np.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     xhr_np.addEventListener("load", function () 
     {
-        if (xhr_np.response == 'ok') document.querySelector("#upload").classList.add("icon-rien-save");
+        if (xhr_np.response == 'ok') document.querySelector("#upload").parentElement.classList.add("icon-rien-save");
     }, false); 
     xhr_np.send(chainePost);
 }
@@ -1310,7 +1354,7 @@ function download_all()
         }, false); 
         xhr_np.send();
     }
-    document.querySelector("#download").classList.add("icon-rien-save");
+    document.querySelector("#download").parentElement.classList.add("icon-rien-save");
 }
 
 

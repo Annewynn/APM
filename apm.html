@@ -16,47 +16,46 @@
                     content {bibli, playlists&tags, lecture}
                     audio play(bas de playlists et tags)
         -->
-        <div class="grid_container">
+        <div id="all_grids_container" class="affiche_biblio">
 
-            <div class="gridclass_header">
+            <div id="gridclass_header" class="gridclass_header">
                 <div class="gridclass_input_header">
 
-                    <label for="myfile">Sélectionner un dossier source :</label>
-                    <input type="file" id="musics_input" name="myfile" accept="audio/*, video/*" multiple onchange="initialisation(event)">
+                    <label for="musics_file_input">Sélectionner des fichiers source :</label>
+                    <input type="file" id="musics_file_input" accept="audio/*, video/*" multiple onchange="initialisation(event)">
                     <div>Chargement des temps des musiques : <div id="chargement_temps"></div></div>
-                    <div class="abspos">
-                        <div id="conteneur_parametres" class="center_parent"></div>
-                    </div>
                 </div>
                     <!--icones de up et download, collées en haut à droite-->  
                 <div id="conteneur_icones" class="gridclass_icons_header">
                     <div class="gridclass_icones_add_musics">
-                        <img id="add_music_files_image" src="images/plus.svg" alt="load music files from disk" class="icon" title="Charger des musiques depuis l'appareil">
+                        <label for="musics_file_input">
+                            <img id="add_music_files_image" src="images/add_music_icon.png" alt="add musics" class="icon" title="Charger des musiques depuis l'appareil">
+                        </label>
                     </div>
                     <!--label for pour que le click sur plus se répercute sur input type file-->
                     <div class="gridclass_icones_add_apm">
                         <label for="add_apm_files">
-                            <img id="add_apm_files_image" src="images/plus.svg" alt="load apm files from disk" class="icon" title="Charger des playlists depuis l'appareil">
+                            <img id="add_apm_files_image" src="images/plus_v2.svg" alt="Icons made from https://www.onlinewebfonts.com/icon is licensed by CC BY 4.0" class="icon" title="Charger des playlists depuis l'appareil">
                         </label>
                         <input id="add_apm_files" type="file" accept="*" multiple onchange="add_from_disk()" class="invisible">
                     </div>
-                    <div class="gridclass_icones_bibli">
-                        <img id="bibli_image" src="images/plus.svg" alt="biblio" class="icon" title="Bibliothèque">
+                    <div class="gridclass_icones_bibli" onclick="smallscreen_affiche_different_body_div('affiche_biblio', 'bibliotheque')">
+                        <img id="bibli_image" src="images/note_musique_biblio.svg" alt="biblio" class="icon" title="Bibliothèque">
                     </div>
-                    <div class="gridclass_icones_playt">
-                        <img id="playt_image" src="images/plus.svg" alt="playlists&tags" class="icon" title="Playlists et Tags">
+                    <div class="gridclass_icones_playt" onclick="smallscreen_affiche_different_body_div('affiche_playt', 'mid_contener')">
+                        <img id="playt_image" src="images/playt_icon.png" alt="playlists & tags" class="icon" title="Playlists et Tags">
                     </div>
-                    <div class="gridclass_icones_playlist">
-                        <img id="playlist_image" src="images/plus.svg" alt="playlist" class="icon" title="Liste de lecture">
+                    <div class="gridclass_icones_playlist" onclick="smallscreen_affiche_different_body_div('affiche_playlist', 'right_contener')">
+                        <img id="playlist_image" src="images/playlist_icon.png" alt="playlist" class="icon" title="Liste de lecture">
                     </div>
-                    <div class="gridclass_icones_upload">
-                        <img id="upload" src="images/upload_icon.svg" alt="upload all files" class="icon icon-rien-save" onclick="upload()" title="Tout sauvegarder sur le serveur">
+                    <div class="gridclass_icones_upload icon-rien-save" onclick="upload()" title="Tout sauvegarder sur le serveur">
+                        <img id="upload" src="images/upload_icon.svg" alt="upload all files" class="icon">
                     </div>
-                    <div class="gridclass_icones_download">
-                        <img id="download" src="images/download-arrow.svg" alt="download all files" class="icon" onclick="download_all()" title="Tout télécharger en local">
+                    <div class="gridclass_icones_download" onclick="download_all()" title="Tout télécharger en local">
+                        <img id="download" src="images/download-arrow.svg" alt="download all files" class="icon">
                     </div>
-                    <div class="gridclass_icones_parameters">
-                        <img id="parameters" src="images/Gear_icon_svg.svg" alt="parameters" class="icon" onclick="affiche_parametres()" title="Paramètres">
+                    <div class="gridclass_icones_parameters" onclick="smallscreen_affiche_different_body_div('affiche_parametres', 'parameters_contener')" title="Paramètres">
+                        <img id="parameters" src="images/Gear_icon_svg.svg" alt="parameters" class="icon">
                     </div>
                 </div>
             </div>  
@@ -74,7 +73,7 @@
                 </div>
             </div>
             <!--contenant le champ de texte-->
-            <div id="mid_contener" class="gridclass_playt">
+            <div id="mid_contener" class="gridclass_playt invisible">
                 <!--contenant la liste de playlists et de tags-->
                 <div id="playlist_tags_contener">
                     <h2>Playlists & Tags</h2>
@@ -106,9 +105,12 @@
             </div>
 
             <!--contenant les pistes en lecture-->
-            <div id="right_contener" class="gridclass_play">
+            <div id="right_contener" class="gridclass_play invisible">
                 <h2>Lecture</h2>
                 <div id="playlist_contener"></div>
+            </div>
+            <!--contenant les paramètres-->
+            <div id="parameters_contener" class="gridclass_parameters invisible padding">
             </div>
 
             <!--contenant l'element audio-->

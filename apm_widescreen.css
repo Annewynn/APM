@@ -20,8 +20,7 @@ body
 */
 .icon
 {
-    border-radius: 10px;
-    width:50px;
+    border-radius: 5px;
     height: 50px;
 }
 
@@ -89,7 +88,28 @@ body
     padding: 0px;
 }
 .gridclass_input_header {grid-area: input-header;}
-.gridclass_icons_header {grid-area: icons-header;}
+.gridclass_icons_header 
+{
+    grid-area: icons-header;
+
+    display: grid;
+    grid-template-areas:
+        'icons-apm icons-upload icons-download icons-parameters';
+
+    column-gap: 0px;
+    row-gap: 0px;
+    padding: 0px;
+}
+
+.gridclass_icones_add_musics {grid-area: icons-musics; display : none;}
+.gridclass_icones_add_apm {grid-area: icons-apm;}
+.gridclass_icones_bibli {grid-area: icons-bibli; display : none;}
+.gridclass_icones_playt {grid-area: icons-playt; display : none;}
+.gridclass_icones_playlist {grid-area: icons-playlist; display : none;}
+.gridclass_icones_upload {grid-area: icons-upload;}
+.gridclass_icones_download {grid-area: icons-download;}
+.gridclass_icones_parameters {grid-area: icons-parameters;}
+
 .gridclass_biblio {grid-area: biblio; overflow-y: auto;}
 .gridclass_playt {grid-area : playlists-tags; overflow-y: auto;}
 .gridclass_play {grid-area : play; overflow-y: auto;}
@@ -104,7 +124,7 @@ body
         'biblio biblio playlists-tags playlists-tags play play'
         'biblio biblio audio-content audio-content play play';
     grid-template-columns: calc(1/6) calc(1/6) calc(1/6) calc(1/6) calc(1/6) calc(1/6);
-    grid-template-rows: auto calc(85%) calc(7%);
+    grid-template-rows: auto calc(85%) 85px;
     column-gap: 10px;
     row-gap: 0px;
     padding: 0px;

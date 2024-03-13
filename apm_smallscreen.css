@@ -15,12 +15,12 @@ body
 
 .icon
 {
-    border-radius: 10px;
-    width:50px;
+    border-radius: 5px;
     height: 50px;
+    max-width: calc(1/8);
 }
 
-.icon:hover, .mini_icon:hover
+.mini_icon:hover
 {
     background-color: aqua;
 }
@@ -33,7 +33,8 @@ body
 
 .tr_hover:hover
 {
-    background-color: rgb(104, 168, 147);
+    background-color: rgba(187, 187, 187, 0.7);
+    background-color: var(--cssvar-trhover);
 }
 
 .played_music
@@ -47,63 +48,107 @@ body
 
     display: grid;
     grid-template-areas:
-        'input-header';
-    grid-template-rows: calc(1/2);
+        'icons-header';
     column-gap: 0px;
     row-gap: 0px;
     padding: 0px;
-    background-color: rgba(165, 39, 39, 0.5);
 }
 .gridclass_input_header {grid-area: input-header; display : none;}
-.gridclass_icons_header {grid-area: icons-header; display : none;}
-.gridclass_biblio {grid-area: biblio; overflow-y: auto;}
-.gridclass_playt {grid-area : playlists-tags; overflow-y: auto; display : none;}
-.gridclass_play {grid-area : play; overflow-y: auto; display : none;}
+.gridclass_icons_header 
+{
+    grid-area: icons-header;
+
+    display: grid;
+    grid-template-areas:
+        'icons-musics icons-apm icons-bibli icons-playt icons-playlist icons-upload icons-download icons-parameters';
+
+    grid-template-columns: calc(1/8) calc(1/8) calc(1/8) calc(1/8) calc(1/8) calc(1/8) calc(1/8) calc(1/8);
+    column-gap: 0px;
+    row-gap: 0px;
+    padding : 0px;
+    background-color: rgba(255, 255, 255, 0);
+}
+
+.gridclass_icons_header div:hover
+{
+    background-color: aqua;
+    box-shadow: 0 12px 16px 0 rgb(0 0 0 / 24%), 0 17px 50px 0 rgb(0 0 0 / 19%);
+}
+
+.gridclass_icons_header div
+{
+    padding-top: 5px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    box-shadow: 0 2px 5px 0 rgb(0 0 0 / 24%), 0 2px 5px 0 rgb(0 0 0 / 19%);
+}
+
+.gridclass_icones_add_musics {grid-area: icons-musics;}
+.gridclass_icones_add_apm {grid-area: icons-apm; }
+.gridclass_icones_bibli {grid-area: icons-bibli;}
+.gridclass_icones_playt {grid-area: icons-playt;}
+.gridclass_icones_playlist {grid-area: icons-playlist;}
+.gridclass_icones_upload {grid-area: icons-upload;}
+.gridclass_icones_download {grid-area: icons-download;}
+.gridclass_icones_parameters {grid-area: icons-parameters;}
+
+.gridclass_biblio {grid-area: biblio; overflow-y: auto; background-color: rgba(255, 255, 255, 0.5);}
+.gridclass_playt {grid-area : playlists-tags; overflow-y: auto; background-color: rgba(255, 255, 255, 0.5);}
+.gridclass_play {grid-area : play; overflow-y: auto; background-color: rgba(255, 255, 255, 0.5);}
+.gridclass_parameters {grid-area: parameters; overflow-y: auto; background-color: rgba(255, 255, 255, 0.5);}
 .gridclass_audio_content {grid-area : audio-content;}
 
-.grid_container
+.affiche_biblio
 {
-    /*
-    smallscreen : 
-    header avec trois barres pour le menu, et le nom de la vue active (biblio, menu...)
-    menu : 
-    + musiques
-    + playlists
-
-    (note) biblio
-    (files) playlists et tags
-
-    upload all
-    download all
-    parameters
-
-    main : liste pour la vue actuelle
-
-    foot : piste en lecture avec les options classiques + next, prev, voir la playlist...
-    */
     display: grid;
-    height: 100vh;
     grid-template-areas:
-        'header header header'
-        'biblio biblio biblio'
-        'audio-content audio-content audio-content';
-    grid-template-columns: calc(1/3) calc(1/3) calc(1/3);
-    grid-template-rows: auto calc(85%) calc(7%);
+    'header'
+    'biblio'
+    'audio-content';
+    grid-template-rows: 60px auto 85px;
+    height: 100vh;
     padding : 0px;
-    background-color: rgba(255, 255, 255, 0.5);
 }
 
-.grid_container div 
+.affiche_playt
+{
+    display: grid;
+    grid-template-areas:
+    'header'
+    'playlists-tags'
+    'audio-content';
+    grid-template-rows: 60px auto 85px;
+    height: 100vh;
+    padding : 0px;
+}
+
+.affiche_playlist
+{
+    display: grid;
+    grid-template-areas:
+    'header'
+    'play'
+    'audio-content';
+    grid-template-rows: 60px auto 85px;
+    height: 100vh;
+    padding : 0px;
+}
+
+.affiche_parametres
+{
+    display: grid;
+    grid-template-areas:
+    'header'
+    'parameters'
+    'audio-content';
+    grid-template-rows: 60px auto 85px;
+    height: 100vh;
+    padding : 0px;
+}
+
+#all_grids_container div 
 {
     text-align: center;
-}
-
-
-#audio_contener
-{
-    border:1px solid #13bad4;
-    border-radius:10px 10px 27px 27px;
-    background-color: rgb(51, 205, 205);
 }
 
 .invisible
@@ -121,7 +166,17 @@ body
 .affichage_audio
 {
     border-radius: 27px;
-    background-color: rgb(233, 255, 255);
+    background-color: rgba(233, 255, 255, 0.5);
+}
+
+.textalign_left 
+{
+    text-align: left !important;
+}
+
+.inline
+{
+    display: inline;
 }
 
 .div_couleur_tag
@@ -152,62 +207,19 @@ body
     transform : rotate(180deg);
     pointer-events: none;
 }
-
-.abspos
-{
-    position : absolute;
-    z-index : 10;
-    width : calc(100%);
-}
-
+/*
 .center_parent
 {
-    /*https://developer.mozilla.org/en-US/docs/Web/CSS/Layout_cookbook/Center_an_element*/
+    /*https://developer.mozilla.org/en-US/docs/Web/CSS/Layout_cookbook/Center_an_element
     display: flex;
     align-items: center;
     justify-content: center;
 }
-
-.div_parametres
-{
-    padding : 10px;
-    box-shadow: 0 12px 16px 0 rgb(0 0 0 / 24%), 0 17px 50px 0 rgb(0 0 0 / 19%);
-    border-radius: 10px;
-    background-color: rgba(84, 139, 141, 0.9);
-    border-width: 3px;
-    border-color: rgb(84, 139, 141);
-}
-
-#div_bouton_fermer_parametres
-{
-    display: flex;
-    justify-content:flex-end;
-}
-
-.bouton_fermer
-{
-    top : 10px;
-    right : 10px;
-}
-
-#titre_parametres
-{
-    margin-top: -10px;
-    text-align: center;
-}
-
-#div_bouton_appliquer_parametres
-{
-    padding-top : 5px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
+*/
 label
 {
-    margin : 2px;
-    padding-left: 5px;
+    display: block;
+    width : 100%;
 }
 
 input[type="color"]
@@ -219,6 +231,7 @@ input[type="color"]
     border: none;
     -webkit-appearance: none;
     box-shadow: 0 5px 8px 0 rgb(0 0 0 / 24%), 0 8px 10px 0 rgb(0 0 0 / 19%);
+    cursor: pointer;
 }
 
 input[type="color"]::-webkit-color-swatch-wrapper {
@@ -231,4 +244,21 @@ input[type="color"]::-webkit-color-swatch {
     padding: 0px; 
     border : none;
     margin : -3px;
+}
+
+input[type="checkbox"]
+{
+    width : 20px;
+    height: 20px;
+    border : none;
+    cursor: pointer;
+    -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.padding
+{
+    padding : 10px;
 }
