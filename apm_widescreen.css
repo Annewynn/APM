@@ -101,20 +101,6 @@ body
     padding: 0px;
 }
 
-.gridclass_icones_add_musics {grid-area: icons-musics; display : none;}
-.gridclass_icones_add_apm {grid-area: icons-apm;}
-.gridclass_icones_bibli {grid-area: icons-bibli; display : none;}
-.gridclass_icones_playt {grid-area: icons-playt; display : none;}
-.gridclass_icones_playlist {grid-area: icons-playlist; display : none;}
-.gridclass_icones_upload {grid-area: icons-upload;}
-.gridclass_icones_download {grid-area: icons-download;}
-.gridclass_icones_parameters {grid-area: icons-parameters;}
-
-.gridclass_biblio {grid-area: biblio; overflow-y: auto;}
-.gridclass_playt {grid-area : playlists-tags; overflow-y: auto;}
-.gridclass_play {grid-area : play; overflow-y: auto;}
-.gridclass_audio_content {grid-area : audio-content;}
-
 .grid_container
 {
     display: grid;
@@ -130,6 +116,36 @@ body
     padding: 0px;
     background-color: rgba(255, 255, 255, 0.5);
 }
+
+.gridclass_icons_header div:hover
+{
+    background-color: rgba(255, 255, 255, 0);
+    background-color: var(--cssvar-iconhover);
+    box-shadow: 0 12px 16px 0 rgb(0 0 0 / 24%), 0 17px 50px 0 rgb(0 0 0 / 19%);
+}
+
+.gridclass_icons_header div
+{
+    padding-top: 5px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    box-shadow: 0 2px 5px 0 rgb(0 0 0 / 24%), 0 2px 5px 0 rgb(0 0 0 / 19%);
+}
+
+.gridclass_icones_add_musics {grid-area: icons-musics;}
+.gridclass_icones_add_apm {grid-area: icons-apm; }
+.gridclass_icones_bibli {grid-area: icons-bibli;}
+.gridclass_icones_playt {grid-area: icons-playt;}
+.gridclass_icones_playlist {grid-area: icons-playlist;}
+.gridclass_icones_upload {grid-area: icons-upload;}
+.gridclass_icones_download {grid-area: icons-download;}
+.gridclass_icones_parameters {grid-area: icons-parameters;}
+
+.gridclass_biblio {grid-area: biblio; overflow-y: auto; background-color: rgba(255, 255, 255, 0.5);}
+.gridclass_playt {grid-area : playlists-tags; overflow-y: auto; background-color: rgba(255, 255, 255, 0.5);}
+.gridclass_play {grid-area : play; overflow-y: auto; background-color: rgba(255, 255, 255, 0.5);}
+.gridclass_parameters {grid-area: parameters; overflow-y: auto; background-color: rgba(255, 255, 255, 0.5);}
+.gridclass_audio_content {grid-area : audio-content;}
 
 .grid_container div 
 {

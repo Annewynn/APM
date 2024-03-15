@@ -5,6 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" media="screen and (min-width: 900px)" href="apm_widescreen.css">
         <link rel="stylesheet" media="screen and (max-width: 900px)" href="apm_smallscreen.css">
+        <script type="text/javascript" src="general_functions.js"></script>
         <script type="text/javascript" src="apm.js"></script>
         <script type="text/javascript" src="musique.js"></script>
         <script type="text/javascript" src="code.js"></script>
@@ -22,7 +23,7 @@
                 <div class="gridclass_input_header">
 
                     <label for="musics_file_input">Sélectionner des fichiers source :</label>
-                    <input type="file" id="musics_file_input" accept="audio/*, video/*" multiple onchange="initialisation(event)">
+                    <input type="file" id="musics_file_input" accept="audio/*, video/*" multiple onchange="progressbar_activation(event);initialisation(event)">
                     <div>Chargement des temps des musiques : <div id="chargement_temps"></div></div>
                 </div>
                     <!--icones de up et download, collées en haut à droite-->  
@@ -63,11 +64,13 @@
             <!--contenant la bibliothèque des noms de musiques-->
             <div id="bibliotheque" class="gridclass_biblio">
                 <h2>Bibliothèque</h2>
+                <span id="chargement_musiques" class="progressbar"></span><br>
+                <span id="musiques_affichees_sur_total"></span>
                 <input type="text" id="recherche_biblio" placeholder="rechercher un titre, un auteur" onkeyup="input_recherche_biblio(event)">
-                <input type="button" id="vide_recherche_biblio" value="x" onclick="recharge_recherche()">
+                <input type="button" id="vide_recherche_biblio" value="x" onclick="recharge_recherche()" class="square_button">
                 <br>
                 <div id="biblio">
-                    <table id="biblio_table">
+                    <table id="biblio_table" class="whole_width">
 
                     </table>
                 </div>
@@ -77,7 +80,7 @@
                 <!--contenant la liste de playlists et de tags-->
                 <div id="playlist_tags_contener">
                     <h2>Playlists & Tags</h2>
-                    <input type="button" value="+" onclick="affiche_code('', '')">
+                    <input type="button" value="+" onclick="affiche_code('', '')" class="square_button">
                     <br>
                     <!--a changer-->
                     <div id="conteneur_playlists_tags_albums">
@@ -110,7 +113,7 @@
                 <div id="playlist_contener"></div>
             </div>
             <!--contenant les paramètres-->
-            <div id="parameters_contener" class="gridclass_parameters invisible padding">
+            <div id="parameters_contener" class="gridclass_parameters invisible">
             </div>
 
             <!--contenant l'element audio-->

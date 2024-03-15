@@ -31,12 +31,15 @@ else
     if (window.location.origin.includes("http") || window.location.origin.includes("localhost")) internet_connection = true;
 }
 
+var chargement_temps_musiques_au_lancement;
+
 //init() lancé au chargement de la page
 //si en ligne, charge les playlists/tags/albums depuis le serveur
 //sinon, ne fait rien
 //dans tous les cas, charge le fichier json de paramètres
 function init()
 {
+    charge_params();
     if (internet_connection)
     {
         var data = [];
@@ -52,6 +55,7 @@ function init()
             {
                 main_creer_interpreter_code(data['filename'][i], data['content'][i], false);
             }
+            actualise_tous_bkgc();
         }, false); 
         xhr_np.send();
     }
@@ -59,8 +63,6 @@ function init()
     {
         document.querySelector("#download").parentElement.classList.add("icon-rien-save");
     }
-
-    charge_params();
 }
 
 //renvoie un array de content et filename trié par album, puis tag, puis playlist
@@ -99,11 +101,24 @@ function charge_params()
         {
             data = JSON.parse(xhr_np.response);
             construit_parametres(data);
+
+            //lecture et interprétation des paramètres
+            var params = lire_parametres();
+            //pour chaque paire key - array, 
+            console.log(params);
+            for (var key in params)
+            {
+                if (key == "chargement_temps_musiques_au_lancement") chargement_temps_musiques_au_lancement = params[key][2];
+                if (key == "color_theme") document.querySelector("body").style.backgroundColor = params[key][2];
+            }
+
+            //après construction des paramètres, on peut changer la couleur de hover des icones
+            actualise_tous_bkgc();
+            
         }, false); 
         xhr_np.send();
     }
     else console.log("Pas de connection internet : les paramètres n'ont pas pu être chargés.")
-    
 }
 
 
@@ -133,6 +148,7 @@ function construit_parametres(data)
         //div pour la paire box-label
         divs.push(document.createElement('div'));
         divs[divs.length-1].classList.add("textalign_left");
+        divs[divs.length-1].classList.add("padding");
         //création paire box-label
         var box = document.createElement('input');
         box.id = key;
@@ -152,7 +168,6 @@ function construit_parametres(data)
             box.type = "color";
             if (parameters[key][2]) box.setAttribute("value", parameters[key][2]);
             box.addEventListener("input", background_color_change_realtime, false);
-            document.querySelector("body").style.backgroundColor = parameters[key][2];
         }
         //append paire box-label dans div
         divs[divs.length-1].appendChild(box);
@@ -177,14 +192,25 @@ function construit_parametres(data)
     degrise_applique_parametres();
 }
 
+function progressbar_activation(event)
+{
+    //pour android/ios, temps de chargement à +-36sec/664 musiques, soit 18/sec
+    var span = document.querySelector("#chargement_musiques");
+    progressbar(span, Math.round(event.target.files.length/18));
+}
+
+
 //récuppérer les noms des musiques de musics_input
 function initialisation(event)
 {
+    //affichage des musiques affichées / total
+    var span2 = document.querySelector("#musiques_affichees_sur_total");
     var fichiers = document.querySelector("#musics_file_input").files;
     //let value = URL.createObjectURL(event.target.files[0]);
     //créer une option par fichier et mettre le nom de la musique dedans
     var selection = document.querySelector("#biblio_table");
     var biblio_length = biblio.length;
+
     for (var i = 0; i<fichiers.length;i++)
     {
         biblio.push(cree_musique(fichiers[i], event.target.files[i]));
@@ -198,6 +224,7 @@ function initialisation(event)
         tr.appendChild(td_color);
         tr.appendChild(td_music);
         selection.appendChild(tr);
+        span2.innerHTML = (i+1) + " / " + fichiers.length;
     }
     actual_biblio = biblio;
 
@@ -207,40 +234,58 @@ function initialisation(event)
     var os = getOS();
     //si on est sur des machines assez puissantes on peut charger les temps des musiques
     //exclusion par défaut des smartphones, sous android et ios
-    if (os != 'Android' || os != 'iOS') readmultifiles(fichiers, biblio_length);
+    if ((os != 'Android' || os != 'iOS') && chargement_temps_musiques_au_lancement != false) readmultifiles(fichiers, biblio_length);
 }
 
-//https://stackoverflow.com/a/60357706
-function cssvar_change(cssvar, value, items)
+//calcule le pourcentage de progression de la porgressbar par sec à partir du temps total
+async function progressbar(progressbar_contener, total_time)
 {
+    //initialisation à 0%
+    var progress = 0;
+    progressbar_contener.innerHTML = progress + ' %';
+    var waiting_time = total_time*10;
+    //with promises
+    //https://stackoverflow.com/questions/19018859/wait-until-sound-finishes-to-use-a-web-page
+    while (progress < 100)
+    {
+        //attente de l'équivalent d'1%
+        await new Promise((resolve) => setTimeout(resolve, waiting_time));
+        progress += 1;
+        progressbar_contener.innerHTML = progress + ' %';
+        cssvar_change_percent_value("--cssvar-gradiant-fill", progress, [progressbar_contener]);
+        cssvar_change_percent_value("--cssvar-gradiant-empty", progress+5, [progressbar_contener]);
+    }
+}
+
+function cssvar_change_percent_value(cssvar, value, items)
+{
+    var fvalue = value + '%';
     items.forEach((item) => {
-        item.style.setProperty(cssvar, value);
+        item.style.setProperty(cssvar, fvalue);
       });
 }
 
-//https://stackoverflow.com/a/38241481
-function getOS() 
+//https://stackoverflow.com/a/60357706
+function cssvar_change_color_from_hsl_bkgc_body(cssvar, values, items)
 {
-    var userAgent = window.navigator.userAgent,
-        platform = window.navigator?.userAgentData?.platform || window.navigator.platform,
-        macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'],
-        windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE'],
-        iosPlatforms = ['iPhone', 'iPad', 'iPod'],
-        os = null;
-  
-    if (macosPlatforms.indexOf(platform) !== -1) {
-      os = 'Mac OS';
-    } else if (iosPlatforms.indexOf(platform) !== -1) {
-      os = 'iOS';
-    } else if (windowsPlatforms.indexOf(platform) !== -1) {
-      os = 'Windows';
-    } else if (/Android/.test(userAgent)) {
-      os = 'Android';
-    } else if (/Linux/.test(platform)) {
-      os = 'Linux';
-    }
-  
-    return os;
+    var bodycolor = document.querySelector("body").style.backgroundColor;
+    //changer la couleur en hsl pour pouvoir manipuler ses valeurs plus facilement
+    var hsl = rgb_to_hsl(bodycolor);
+    console.log(items);
+    console.log(hsl);
+    //values : % de la valeur actuelle
+    var h_modif = hsl[0] / values[0];
+    var s_modif = hsl[1] / values[1];
+    var l_modif = hsl[2] / values[2];
+    h_modif = check_correct_boundaries(h_modif, 0, 360);
+    s_modif = check_correct_boundaries(s_modif, 0, 100);
+    l_modif = check_correct_boundaries(l_modif, 0, 100);
+
+    var fvalue = 'hsl(' + h_modif + ' ' + s_modif + '% ' + l_modif + '%)';
+    console.log(fvalue);
+    items.forEach((item) => {
+        item.style.setProperty(cssvar, fvalue);
+      });
 }
 
 //f de stackoverflow, charge les métadonnées de chaque musique et affiche sa progression à l'écran
@@ -336,6 +381,7 @@ function actualise_biblio_affichee(liste_biblio)
 {
     var selection = document.querySelector("#biblio_table");
     selection.innerHTML = "";
+    var span = document.querySelector("#musiques_affichees_sur_total");
     for (var i = 0; i<liste_biblio.length;i++)
     {
         var tr = document.createElement('tr');
@@ -357,14 +403,8 @@ function actualise_biblio_affichee(liste_biblio)
         tr.appendChild(td_music);
         selection.appendChild(tr);
     }
-        //change la couleur de tr_hover:hover à celle de body avec alpha 0.7
-        var items = selection.querySelectorAll('tr');
-        var bodycolor = document.querySelector("body").style.backgroundColor;
-        //insert ,alpha code at length -2
-        var tbodycolor = Array.from(bodycolor);
-        tbodycolor.splice(bodycolor.length-1, 0, ',0.8');
-        bodycolor = tbodycolor.join('');
-        cssvar_change("--cssvar-trhover", bodycolor, items);
+    span.innerHTML = liste_biblio.length + " / " + biblio.length;
+    actualise_tous_bkgc();
 }
 
 function input_recherche_biblio(event)
@@ -766,7 +806,7 @@ function developpe_equation(code)
     //renvoie nom du tag virtuel créé
     console.log("titres après op : ", titres);
     //nom = rng
-    virtual_tag = new Code("TAG", rng(1000), "", false, 
+    virtual_tag = new Code("TAG", rng(1000, table_rng), "", false, 
     titres, "all", false, "", "", "", 
     "", "", false, false, 
     "", "", code);
@@ -817,18 +857,6 @@ function diff(titres)
 {
     //https://stackoverflow.com/a/53092728
     return titres[1].filter(n => !titres[2].includes(n))
-}
-
-
-function rng(limit)
-{
-    var rng = Math.floor(Math.random()*limit);
-    while(table_rng.includes(rng))
-    {
-        rng = Math.floor(Math.random()*limit);
-    }
-    table_rng.push(rng);
-    return rng;
 }
 
 //détruit les tags virtuels de la liste tags à l'issue de l'interprétation des équations
@@ -996,6 +1024,7 @@ function maj_liste(type)
     var enfant = document.querySelector("#conteneur_" + type_liste(type));
     enfant.innerHTML = "";
     var tab = document.createElement('table');
+    tab.classList.add("whole_width");
     var tr = document.createElement('tr');
     //th contient la flèche pour réduire et le nom du tableau
     var th = document.createElement('th');
@@ -1018,6 +1047,7 @@ function maj_liste(type)
     for (var i =0; i<type.length; i++)
     {
         var row = document.createElement('tr');
+        row.classList.add("tr_hover");
         if (type_liste(type) == "PLAYLIST") row.addEventListener("click", affiche_playlist, false);
         else if (type_liste(type) == "TAG") row.addEventListener("click", affiche_tag, false);
         var td_nom=document.createElement('td');
@@ -1088,6 +1118,7 @@ function affiche_playlist(event)
     var contenant = document.querySelector("#playlist_contener");
     contenant.innerHTML = "";
     var tab = document.createElement('table');
+    tab.classList.add("whole_width");
     var th = document.createElement('th');
     var tbody = document.createElement('tbody');
     th.innerHTML = playlists[selected].nom;
@@ -1121,6 +1152,7 @@ function affiche_playlist(event)
     for (var i =0; i<shuffled_titles.length; i++)
     {
         var tr = document.createElement('tr');
+        tr.classList.add("tr_hover");
         tr.addEventListener("click", onclick_joue_playlist, false);
         var td = document.createElement('td');
         td.innerHTML = shuffled_titles[i].nom;
@@ -1133,6 +1165,10 @@ function affiche_playlist(event)
     //afficher le code de la playlist
     affiche_code(playlists[selected].titre_code, playlists[selected].source_code);
     actively_displayed_code = playlists[selected];
+
+    //gérer le hover des tr
+    var items = document.querySelectorAll('.tr_hover');
+    if (items.length != 0) cssvar_change_color_from_hsl_bkgc_body("--cssvar-trhover", [1, 1, 0.6], items);
 
     actively_played_playlist = new Playlist(playlists[selected], shuffled_titles);
     if (have_music_to_play) joue_playlist(0);
@@ -1181,28 +1217,34 @@ function degrise_applique_parametres()
     }
 }
 
+//change body background color from colorbox
 function background_color_change_realtime(e)
 {
     var body = document.querySelector("body");
     body.style.backgroundColor = e.target.value;
+    var items = document.querySelectorAll('h2');
+    if (items.length != 0) cssvar_change_color_from_hsl_bkgc_body("--cssvar-h2", [1, 1, 0.6], items);
+    var items = document.querySelectorAll('.played_music');
+    if (items.length != 0) cssvar_change_color_from_hsl_bkgc_body("--cssvar-trfocus", [1, 1, 0.70], items);
 }
 
-//pour une liste d'éléments, enlève un event listener particulier
-function remove_event_listeners(id_table, action, fonction)
+function actualise_tous_bkgc()
 {
-    for (var i =0; i<id_table.length; i++)
-    {
-        id_table[i].removeEventListener(action, fonction);
-    }
-}
-
-//pour une liste d'éléments, ajoute un event listener
-function add_event_listeners(id_table, action, fonction)
-{
-    for (var i =0; i<id_table.length; i++)
-    {
-        id_table[i].addEventListener(action, fonction);
-    }
+    //après construction des paramètres, on peut changer la couleur de hover des icones
+    var items = document.querySelectorAll('.gridclass_icons_header > div');
+    if (items.length != 0) cssvar_change_color_from_hsl_bkgc_body("--cssvar-iconhover", [1, 1, 0.6], items);
+    //change la couleur de tr_hover:hover à celle de body avec alpha 0.7
+    var items = document.querySelectorAll('.tr_hover');
+    if (items.length != 0) cssvar_change_color_from_hsl_bkgc_body("--cssvar-trhover", [1, 1, 0.6], items);
+    var items = document.querySelectorAll('.mini_icon');
+    if (items.length != 0) cssvar_change_color_from_hsl_bkgc_body("--cssvar-bkgc", [1, 1, 1], items);
+    var items = document.querySelectorAll('input[type="button"]');
+    if (items.length != 0) cssvar_change_color_from_hsl_bkgc_body("--cssvar-button", [1, 1, 1], items);
+    if (items.length != 0) cssvar_change_color_from_hsl_bkgc_body("--cssvar-buttonhover", [1, 1, 0.5], items);
+    var items = document.querySelectorAll('h2');
+    if (items.length != 0) cssvar_change_color_from_hsl_bkgc_body("--cssvar-h2", [1, 1, 0.6], items);
+    var items = document.querySelectorAll('.played_music');
+    if (items.length != 0) cssvar_change_color_from_hsl_bkgc_body("--cssvar-trfocus", [1, 1, 0.70], items);
 }
 
 //onclick sur applique paramètres
@@ -1213,17 +1255,9 @@ function applique_parametres()
 {
     var divs = document.querySelectorAll("#parameters_contener div");
     degrise_applique_parametres();
+    actualise_tous_bkgc();
 
-    //tableau de la forme : {id input : [label value, input type, input value]}
-    var jsarray = {};
-    for (var i =0; i<divs.length; i++)
-    {
-        let input = divs[i].querySelector("input");
-        let label = divs[i].querySelector("label");
-        let inputvalue = input.value;
-        if (input.type == "checkbox") inputvalue = input.checked;
-        jsarray[input.id] = [label.innerHTML, input.type, inputvalue];
-    }
+    var jsarray = lire_parametres();
     //sauver valeurs dans json
     console.log(JSON.stringify(jsarray));
 
@@ -1234,33 +1268,26 @@ function applique_parametres()
     xhr_np.send(chainePost);
 }
 
+function lire_parametres()
+{
+    var divs = document.querySelectorAll("#parameters_contener div");
+    //tableau de la forme : {id input : [label value, input type, input value]}
+    var jsarray = {};
+    for (var i =0; i<divs.length; i++)
+    {
+        let input = divs[i].querySelector("input");
+        let label = divs[i].querySelector("label");
+        let inputvalue = input.value;
+        if (input.type == "checkbox") inputvalue = input.checked;
+        jsarray[input.id] = [label.innerHTML, input.type, inputvalue];
+    }
+    return jsarray;
+}
+
 function ferme_parametres()
 {
     var conteneur = document.querySelector("#parameters_contener div");
     conteneur.classList.add("invisible");
-}
-
-
-
-//https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
-//https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
-function shuffle(array) 
-{
-    let currentIndex = array.length,  randomIndex;
-  
-    // While there remain elements to shuffle.
-    while (currentIndex != 0) {
-  
-      // Pick a remaining element.
-      randomIndex = Math.floor(Math.random() * currentIndex);
-      currentIndex--;
-  
-      // And swap it with the current element.
-      [array[currentIndex], array[randomIndex]] = [
-        array[randomIndex], array[currentIndex]];
-    }
-  
-    return array;
 }
 
 //event clic sur le titre dans la playlist (colonne lecture)
@@ -1286,6 +1313,8 @@ function gere_css_played_music(table_rows, i_to_add)
     for (var i =0; i<table_rows.length; i++) table_rows[i].classList.remove("played_music");  
     //ajouter la classe à la ligne i_to_add
     table_rows[i_to_add].classList.add("played_music");
+    var items = document.querySelectorAll('.played_music');
+    if (items.length != 0) cssvar_change_color_from_hsl_bkgc_body("--cssvar-trfocus", [1, 1, 0.70], items);
 }
 
 function attente(audio)
